@@ -1,26 +1,59 @@
 // This source code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
-// © kenix9961821
+// © fikira
 //@version=5
-indicator('KeNiX‘s Volume Profile Auto 60-1D ', shorttitle='KNXVPA60-1D', overlay=true, max_lines_count=99, max_boxes_count=1440)
+indicator('KeNiX‘s Volume Profile Auto [1860]', shorttitle='KNXVPa[1860]', overlay=true, max_lines_count=500, max_boxes_count=500)
 
-i_size = 45 //input.int(25, 'parts', minval=5, maxval=50)
-i_width = 1 //input(15, 'max width')
-aMax = 99 //input.int(500, 'max lines', maxval=500)
-c_volH = input(color.new(color.yellow, 81), title='color vol max')
-c_vol = input(color.new(color.blue, 81), title='color vol')
-c_POC = input(color.new(color.yellow, 9), title='color POC')
+i_size = input.int(25, 'parts', minval=5, maxval=50)
+i_width = input(15, 'max width')
+aMax = input.int(500, 'max lines', maxval=500)
+c_volH = input(color.new(color.orange, 40), title='color vol max')
+c_vol = input(color.new(color.blue, 65), title='color vol')
+c_POC = input(color.new(#ff0000, 40), title='color POC')
 
 maxVol = ta.highest(volume, aMax)
 
+i_auto = input.bool(true, title='Automatic Settings', tooltip='Lower Timeframe = Monthly -> Higher Timeframe = 1 Year \nLower Timeframe = Weekly -> Higher Timeframe = 1 Month \nLower Timeframe = Daily -> Higher Timeframe = 1 Week \nLower Timeframe = Hourly -> Higher Timeframe = 1 Day \nLower Timeframe = Minutes -> Higher Timeframe = 1 Hour \nLower Timeframe = Seconds -> Higher Timeframe = 1 Minute')
 
-chT_H = ta.change(time('1D'))
-chT_Lo = ta.change(time('60'))
+periodL1 = input.timeframe('60', title='Lower Timeframe')
+periodH1 = input.timeframe('D', title='Higher Timeframe')
+
+periodH2 = '1'
+
+if timeframe.ismonthly
+    periodH2 := '12M'
+    periodH2
+else
+    if timeframe.isweekly
+        periodH2 := '1M'
+        periodH2
+    else
+        if timeframe.isdaily
+            periodH2 := '1W'
+            periodH2
+        else
+            if timeframe.period == '60' or timeframe.period == '120' or timeframe.period == '180' or timeframe.period == '240' or timeframe.period == '360' or timeframe.period == '480' or timeframe.period == '720'
+                periodH2 := '1D'
+                periodH2
+            else
+                if timeframe.isminutes
+                    periodH2 := '60'
+                    periodH2
+                else
+                    if timeframe.isseconds
+                        periodH2 := '1'
+                        periodH2
+
+periodL = i_auto ? timeframe.period : periodL1
+periodH = i_auto ? periodH2 : periodH1
+
+chT_H = ta.change(time(periodH))
+chT_Lo = ta.change(time(periodL))
 
 var t_H = 0
 var t_L = 0
-t_H := 1000 * 60 * 60 * 24 //periodH == '1' ? 1000 * 60 : periodH == '3' ? 1000 * 60 * 3 : periodH == '5' ? 1000 * 60 * 5 : periodH == '10' ? 1000 * 60 * 10 : periodH == '15' ? 1000 * 60 * 15 : periodH == '30' ? 1000 * 60 * 30 : periodH == '60' ? 1000 * 60 * 60 : periodH == '120' ? 1000 * 60 * 60 * 2 : periodH == '180' ? 1000 * 60 * 60 * 3 : periodH == '240' ? 1000 * 60 * 60 * 4 : periodH == '360' ? 1000 * 60 * 60 * 6 : periodH == '720' ? 1000 * 60 * 60 * 12 : periodH == '1D' ? 1000 * 60 * 60 * 24 : periodH == '3D' ? 1000 * 60 * 60 * 24 * 3 : periodH == '1W' ? 1000 * 60 * 60 * 24 * 7 : periodH == '1M' ? 1000 * 60 * 60 * 24 * 30 : 1000 * 60 * 60 * 24 * 365
+t_H := periodH == '1' ? 1000 * 60 : periodH == '3' ? 1000 * 60 * 3 : periodH == '5' ? 1000 * 60 * 5 : periodH == '10' ? 1000 * 60 * 10 : periodH == '15' ? 1000 * 60 * 15 : periodH == '30' ? 1000 * 60 * 30 : periodH == '60' ? 1000 * 60 * 60 : periodH == '120' ? 1000 * 60 * 60 * 2 : periodH == '180' ? 1000 * 60 * 60 * 3 : periodH == '240' ? 1000 * 60 * 60 * 4 : periodH == '360' ? 1000 * 60 * 60 * 6 : periodH == '720' ? 1000 * 60 * 60 * 12 : periodH == '1D' ? 1000 * 60 * 60 * 24 : periodH == '3D' ? 1000 * 60 * 60 * 24 * 3 : periodH == '1W' ? 1000 * 60 * 60 * 24 * 7 : periodH == '1M' ? 1000 * 60 * 60 * 24 * 30 : 1000 * 60 * 60 * 24 * 365
 
-t_L := 1000 * 60 * 60 //not i_auto ? periodL == '1' ? 1000 * 60 : periodL == '3' ? 1000 * 60 * 3 : periodL == '5' ? 1000 * 60 * 5 : periodL == '10' ? 1000 * 60 * 10 : periodL == '15' ? 1000 * 60 * 15 : periodL == '30' ? 1000 * 60 * 30 : periodL == '60' ? 1000 * 60 * 60 : periodL == '120' ? 1000 * 60 * 60 * 2 : periodL == '180' ? 1000 * 60 * 60 * 3 : periodL == '240' ? 1000 * 60 * 60 * 4 : periodL == '360' ? 1000 * 60 * 60 * 6 : periodL == '720' ? 1000 * 60 * 60 * 12 : periodL == '1D' ? 1000 * 60 * 60 * 24 : periodL == '3D' ? 1000 * 60 * 60 * 24 * 3 : periodL == '1W' ? 1000 * 60 * 60 * 24 * 7 : 1000 * 60 * 60 * 24 * 30 : timeframe.isseconds ? 1000 * timeframe.multiplier : timeframe.isminutes ? 1000 * 60 * timeframe.multiplier : periodL == '60' ? 1000 * 60 * 60 : periodL == '120' ? 1000 * 60 * 60 * 2 : periodL == '180' ? 1000 * 60 * 60 * 3 : periodL == '240' ? 1000 * 60 * 60 * 4 : periodL == '360' ? 1000 * 60 * 60 * 6 : periodL == '720' ? 1000 * 60 * 60 * 12 : timeframe.isdaily ? 1000 * 60 * 60 * 24 * timeframe.multiplier : timeframe.isweekly ? 1000 * 60 * 60 * 24 * 7 * timeframe.multiplier : 1000 * 60 * 60 * 24 * 30 * timeframe.multiplier
+t_L := not i_auto ? periodL == '1' ? 1000 * 60 : periodL == '3' ? 1000 * 60 * 3 : periodL == '5' ? 1000 * 60 * 5 : periodL == '10' ? 1000 * 60 * 10 : periodL == '15' ? 1000 * 60 * 15 : periodL == '30' ? 1000 * 60 * 30 : periodL == '60' ? 1000 * 60 * 60 : periodL == '120' ? 1000 * 60 * 60 * 2 : periodL == '180' ? 1000 * 60 * 60 * 3 : periodL == '240' ? 1000 * 60 * 60 * 4 : periodL == '360' ? 1000 * 60 * 60 * 6 : periodL == '720' ? 1000 * 60 * 60 * 12 : periodL == '1D' ? 1000 * 60 * 60 * 24 : periodL == '3D' ? 1000 * 60 * 60 * 24 * 3 : periodL == '1W' ? 1000 * 60 * 60 * 24 * 7 : 1000 * 60 * 60 * 24 * 30 : timeframe.isseconds ? 1000 * timeframe.multiplier : timeframe.isminutes ? 1000 * 60 * timeframe.multiplier : periodL == '60' ? 1000 * 60 * 60 : periodL == '120' ? 1000 * 60 * 60 * 2 : periodL == '180' ? 1000 * 60 * 60 * 3 : periodL == '240' ? 1000 * 60 * 60 * 4 : periodL == '360' ? 1000 * 60 * 60 * 6 : periodL == '720' ? 1000 * 60 * 60 * 12 : timeframe.isdaily ? 1000 * 60 * 60 * 24 * timeframe.multiplier : timeframe.isweekly ? 1000 * 60 * 60 * 24 * 7 * timeframe.multiplier : 1000 * 60 * 60 * 24 * 30 * timeframe.multiplier
 
 mult = t_H / t_L
 
@@ -30,10 +63,13 @@ var a_box = array.new_box(i_size, na)
 var tempArray = array.new_float(i_size, 0)
 var tmpAmax = 0.
 var index = 0
+
 float lpoc_now = 0.0
-float lpoc_pre =0.0
+float lpoc_pre = 0.0
 var msgindex = 0
-var alert_data_msg = ""
+var alert_data_msg = ''
+
+
 var line l_POC = na
 line.delete(l_POC)
 
@@ -43,7 +79,6 @@ if chT_H
 
     // Draw POC
     l_POC := line.new(line.get_x1(array.get(a_lines, index)), math.avg(line.get_y1(array.get(a_lines, index)), line.get_y1(array.get(a_lines, index + 1))), line.get_x2(array.get(a_lines, index)) + 100, math.avg(line.get_y1(array.get(a_lines, index)), line.get_y1(array.get(a_lines, index + 1))), color=c_POC)
-    
     // place box just 1 bar further  
     if array.size(a_box) > 0
         box.set_right(array.get(a_box, 0), bar_index)  // move latest box (right size) 1 bar_index further when new period
@@ -99,51 +134,31 @@ if array.size(a_vol) > 0
     index := array.indexof(tempArray, tmpAmax)
     line.set_color(array.get(a_lines, index), c_volH)
     l_POC := line.new(line.get_x1(array.get(a_lines, index)), math.avg(line.get_y1(array.get(a_lines, index)), line.get_y1(array.get(a_lines, index + 1))), line.get_x2(array.get(a_lines, index)) + 100, math.avg(line.get_y1(array.get(a_lines, index)), line.get_y1(array.get(a_lines, index + 1))), color=c_POC)
-    l_POC
-    lpoc_now := math.avg(line.get_y1(array.get(a_lines, index)), line.get_y1(array.get(a_lines,  index+1)))
+    lpoc_now := math.avg(line.get_y1(array.get(a_lines, index)), line.get_y1(array.get(a_lines, index + 1)))
     msgindex := index
-    
+    msgindex
+
 if barstate.islast
     for i = 0 to array.size(a_lines) - 1 by 1
         boxL = box.get_left(array.get(a_box, 0))
         boxR = box.get_right(array.get(a_box, 0))
         width = boxR - boxL
         line.set_width(array.get(a_lines, i), math.round(i_width / maxVol * array.get(a_vol, i)))  // at the last bar, adjust all line width's (to get a uniform comparison between lines)
-        line.set_x2(l_POC, bar_index + 9)
-        
-        lpoc_pre := math.avg(line.get_y1(array.get(a_lines, 0)), line.get_y1(array.get(a_lines,  1)))
-////=================================macd below==========
-var cumVol = 0.
-cumVol += nz(volume)
-if barstate.islast and cumVol == 0
-    runtime.error("No volume is provided by the data vendor.")
-src = close
-obv = ta.cum(math.sign(ta.change(src)) * volume)
-fast_length = 12
-slow_length = 63
-signal_length = 9
-fast_ma =  ta.ema(obv, fast_length)
-slow_ma =  ta.ema(obv, slow_length)
-macd = fast_ma - slow_ma
-signal = ta.ema(macd, signal_length)
-hist = macd - signal
-
-///=============
-
+        line.set_x2(l_POC, bar_index + 200)
+        lpoc_pre := math.avg(line.get_y1(array.get(a_lines, 0)), line.get_y1(array.get(a_lines, 1)))
+        lpoc_pre
 alert_data_msg := 
           "{ \"passphrase\" : \"knxcrazywin\",\n"  
           +"\"symbol\" : \"" + syminfo.ticker + "\",\n"
-          + "\"vp601Ddata\": { \n"  
+          + "\"vp1860data\": { \n"  
           + "\"l_POC-now\": " + str.tostring(lpoc_now) + ",\n" 
-          + "\"l_POC-pre\": " + str.tostring(lpoc_pre) 
-          + "\n},"
-          + "\"MACD\": { \n"
-          + "\"fast_ma\": " + str.tostring(fast_ma[1]) + ",\n" 
-          + "\"slow_ma\": " + str.tostring(slow_ma[1]) + ",\n" 
-          + "\"hist\": " + str.tostring(hist[1]) 
-          +"\n}\n}"       
-alert(message = alert_data_msg, freq = alert.freq_once_per_bar)
+          + "\"l_POC-now-index\": " + str.tostring(msgindex) + ",\n" 
+          + "\"l_POC-l\": " + str.tostring(lpoc_pre) 
+          + "\n}}"       
+//alert(message = alert_data_msg, freq = alert.freq_once_per_bar)        
+//barcolor(color.new(color.white, 9))                                                               // make candles transparent
 
-barcolor(color.new(color.white, 9))  // make candles transparent
+//plot(array.size(a_box  ) > 0 ?  array.size(a_box  ) : na)   
+//plot(array.size(a_lines) > 0 ?  array.size(a_lines) : na)   
 
 
