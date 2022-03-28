@@ -4,12 +4,12 @@
 // vim: shiftwidth=2 tabstop=2
 
 //@version=4
-study("KeNiX's volume clusters", "KNXVolClust", overlay=true, max_bars_back=500)
+study("KeNiX's volume clusters", "KNXVolClust", overlay=true, max_bars_back=1899)
 
-block_size = input(15, "Bars in profile block", minval=10, maxval=166)
-visual_row_width = input(10.0, "Visual row width", minval=10)
+block_size = input(15, "Bars in profile block", minval=10, maxval=1440)
+visual_row_width = input(9.0, "Visual row width", minval=10)
 show_vpoc = input(true, "Show volume point of control")
-filter_size = input(200, "Profile maximum high pass filter size in bars")
+filter_size = input(99, "Profile maximum high pass filter size in bars")
 use_custom_volume_source = input(false, "Use custom volume source")
 volume_source_symbol = input("", "Custom volume source symbol", input.symbol)
 
